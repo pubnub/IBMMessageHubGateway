@@ -18,6 +18,8 @@
  * © Copyright IBM Corp. 2015-2017
  */
 
+    // This should pull from PubNub bot_object
+
 var producer;
 var exports = module.exports = {};
 
@@ -30,7 +32,9 @@ var exports = module.exports = {};
  * @param {function} shutdown - shutdown function
  * @return {Producer} - the Kafka Producer instance
 */
-exports.buildProducer = function(Kafka, producer_opts, topicName, shutdown) {
+exports.buildProducer = function(Kafka, producer_opts, topicName, shutdown, pubnub) {
+
+
     // Create Kafka producer
     producer = new Kafka.Producer(producer_opts);
     producer.setPollInterval(100);
@@ -57,24 +61,39 @@ exports.buildProducer = function(Kafka, producer_opts, topicName, shutdown) {
     });
 
     function sendMessages(counter, topic, partition) {
-        var message = new Buffer('This is a test message #' + counter);
+
+
+        var qMessage = "";
         var key = 'Key';
-        // Short sleep for flow control in this sample app
-        // to make the output easily understandable
-        var timeout = 2000;
-        try {
-            producer.produce(topic, partition, message, key);
-            counter++;
-        } catch (err) {
-            console.error('Failed sending message ' + message);
-            console.error(err);
-            timeout = 5000; // Longer wait before retrying
-        }
-        setTimeout(function () {
-            if (producer.isConnected()) {
-                sendMessages(counter, topic, partition);
+
+        pubnub.addListener({
+            status: function(statusEvent) {
+                if (statusEvent.category === "PNConnectedCategory") {
+                    console.log("PubNub: Connected!");
+                }
+            },
+            message: function(envelope) {
+                //console.log("PubNub: New Message!", envelope.message);
+                qMessage = new Buffer(envelope.message);
+
+                // Short sleep for flow control in this sample app
+                // to make the output easily understandable
+
+                try {
+                    producer.produce(topic, partition, qMessage, key);
+                    //counter++;
+                } catch (err) {
+                    console.error('Failed sending message ' + qMessage);
+                    console.error(err);
+                    //timeout = 5000; // Longer wait before retrying
+                }
+
+            },
+            presence: function(presenceEvent) {
+                console.log("PubNub: New Presence Event!", presenceEvent);
             }
-        }, timeout);
+        });
+
     }
 
     // Register callback invoked when producer has connected
@@ -108,6 +127,10 @@ exports.buildProducer = function(Kafka, producer_opts, topicName, shutdown) {
         var counter = 0;
 
         // Start sending messages
+        console.log("PubNub: Subscribing!");
+        pubnub.subscribe({
+            channels: ['bot']
+        });
         sendMessages(counter, topic, 0);
 
     });

@@ -17,6 +17,17 @@
  * Licensed Materials - Property of IBM
  * © Copyright IBM Corp. 2015-2017
  */
+
+    /*
+     node app.js kafka04-prod01.messagehub.services.us-south.bluemix.net:9093 https://kafka-admin-prod01.messagehub.services.us-south.bluemix.net:443 eJsschXJLI3VceJj7XbF0FVIH60keOceimPD3UHc59H73xCv ~/certs.pem
+      */
+var PubNub = require('pubnub');
+var pubnub = new PubNub({
+    publishKey : 'demo-36',
+    subscribeKey : 'demo-36'
+});
+
+
 var Kafka = {};
 var MessageHubAdminRest = require('message-hub-rest');
 var ProducerLoop = require('./producerLoop.js');
@@ -25,7 +36,7 @@ var fs = require('fs');
 
 var adminRestInstance;
 var opts = {};
-var topicName = 'kafka-nodejs-console-sample-topic';
+var topicName = 'kafka-nodejs-console-sample-topic-2';
 var runProducer = true;
 var runConsumer = true;
 var producer, consumer;
@@ -194,7 +205,7 @@ function runLoops() {
 
     // Start the clients
     if (runProducer) {
-        producer = ProducerLoop.buildProducer(Kafka, producer_opts, topicName, shutdown);
+        producer = ProducerLoop.buildProducer(Kafka, producer_opts, topicName, shutdown, pubnub);
         producer.connect();
     }
 

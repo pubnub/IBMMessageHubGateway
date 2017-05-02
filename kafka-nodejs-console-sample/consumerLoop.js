@@ -76,12 +76,14 @@ exports.buildConsumer = function(Kafka, consumer_opts, topicName, shutdown) {
         consumer.subscribe([topicName]);
         consumer.consume();
         consumerLoop = setInterval(function () {
+            console.log()
             if (consumedMessages.length === 0) {
                 console.log('No messages consumed');
             } else {
                 for (var i = 0; i < consumedMessages.length; i++) {
                     var m = consumedMessages[i];
-                    console.log('Message consumed: topic=' + m.topic + ', partition=' + m.partition + ', offset=' + m.offset + ', key=' + m.key + ', value=' + m.value.toString());
+
+                    console.log('Message consumed: topic=' + m.topic + ', partition=' + m.partition + ', offset=' + m.offset + ', key=' + m.key + ', value==' + m.value.toString());
                 }
                 consumedMessages = [];
             }
