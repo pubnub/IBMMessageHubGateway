@@ -33,7 +33,7 @@ exports.consumerLoop = consumerLoop;
  * @param {function} shutdown - shutdown function
  * @return {KafkaConsumer} - the KafkaConsumer instance
  */
-exports.buildConsumer = function(Kafka, consumer_opts, topicName, shutdown) {
+exports.buildConsumer = function(Kafka, consumer_opts, topicName, shutdown, pubnub) {
     
     consumer = new Kafka.KafkaConsumer(consumer_opts);
 
@@ -84,7 +84,16 @@ exports.buildConsumer = function(Kafka, consumer_opts, topicName, shutdown) {
                     var m = consumedMessages[i];
 
                     console.log('Message consumed: topic=' + m.topic + ', partition=' + m.partition + ', offset=' + m.offset + ', key=' + m.key + ', value==' + m.value.toString());
-                }
+
+                    pubnub.publish(
+                        {
+                            message: m.value.toString(),
+                            channel: m.topic
+                        },
+                        function (status, response) {
+                            console.log("PubNub: Status: " + JSON.stringify(status), JSON.stringify(response));
+                        }
+                    );                }
                 consumedMessages = [];
             }
         }, 2000);

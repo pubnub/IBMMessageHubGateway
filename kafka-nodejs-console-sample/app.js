@@ -210,7 +210,7 @@ function runLoops() {
     }
 
     if (runConsumer) {
-        consumer = ConsumerLoop.buildConsumer(Kafka, consumer_opts, topicName, shutdown);
+        consumer = ConsumerLoop.buildConsumer(Kafka, consumer_opts, topicName, shutdown, pubnub);
         consumer.connect();
     }
 };
